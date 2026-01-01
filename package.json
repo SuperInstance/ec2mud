@@ -1,0 +1,57 @@
+{
+  "name": "ec2mud",
+  "version": "1.0.0",
+  "description": "Multi-user dungeon (MUD) game server hosted on AWS EC2",
+  "private": true,
+  "license": "MIT",
+  "author": "SuperInstance",
+  "homepage": "https://github.com/SuperInstance/ec2mud#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SuperInstance/ec2mud.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SuperInstance/ec2mud/issues"
+  },
+  "scripts": {
+    "dev": "next dev -p 3005",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "15.3.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lucide-react": "^0.525.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.3.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5",
+    "tailwindcss": "^4",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "keywords": [
+    "superinstance",
+    "mud",
+    "game",
+    "multiplayer",
+    "ec2",
+    "aws",
+    "socket.io",
+    "realtime"
+  ]
+}

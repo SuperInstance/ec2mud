@@ -1,0 +1,11 @@
+# Robots.txt for SuperInstance Core
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+
+# Disallow API routes from being indexed
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://github.com/SuperInstance/SuperInstanceCore/sitemap.xml

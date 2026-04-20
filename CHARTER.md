@@ -1,7 +1,7 @@
 # CHARTER — ec2mud
 
 ## Mission
-MUD (multi-user dungeon) game engine built on EC2 infrastructure
+Browser-based MUD game engine + fleet dashboard. The web face of holodeck-core.
 
 ## Type
 vessel
@@ -9,7 +9,9 @@ vessel
 ## Fleet Integration
 - Git-Agent Standard v2.0 compliant
 - I2I protocol compatible
+- Socket.IO bridge to holodeck-core (Rust TCP on 7778)
+- Standalone MUD server for dev/demo
 - Fleet monitoring ready
 
 ## Status
-Active | TypeScript | 57KB
+Active | TypeScript | Next.js 15 + Socket.IO

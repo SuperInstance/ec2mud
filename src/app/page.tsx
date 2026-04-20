@@ -92,6 +92,9 @@ export default function HomePage() {
               </div>
             </div>
             <nav className="flex gap-4">
+              <Link href="/game" className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-colors">
+                🔮 Enter Holodeck
+              </Link>
               <Link href="/catalog" className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 Catalog
               </Link>

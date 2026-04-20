@@ -1,175 +1,95 @@
 # ec2mud
 
-A real-time Multi-User Dungeon (MUD) game server with web interface, deployable to AWS EC2.
+**A browser-based MUD game engine with web dashboard, powered by Socket.IO.**
 
-## Overview
+The web face of the holodeck fleet. Players connect via browser, explore rooms, talk to NPCs, interact with other players — all in real-time. When holodeck-core (Rust) is running, the WebSocket bridge connects directly. When it's not, the built-in standalone MUD server takes over.
 
-ec2mud is a modern web-based MUD game server built with Next.js and Socket.IO. Players can connect via browser, explore rooms, interact with objects, and engage with other players in real-time.
+### What's inside
 
-### Key Features
+- **`/game`** — Live MUD terminal. Login, explore rooms, chat, take items, talk to NPCs.
+- **`/`** — Fleet dashboard. Module stats, fleet overview.
+- **`/catalog`** — Module browser with search/filter.
+- **`/settings`** — API key management + system config.
 
-- **Real-time Gameplay** - WebSocket-powered live interactions
-- **Web Interface** - Beautiful terminal-style UI in the browser
-- **Room System** - Dynamic world with connected rooms
-- **Player Persistence** - Character data saved across sessions
-- **Chat System** - Global, local, and private messaging
-- **Combat System** - Turn-based combat with NPCs and other players
-- **Inventory** - Items, equipment, and loot mechanics
-- **AWS Ready** - Optimized for EC2 deployment
+### The World
 
-## Quick Start
+Six rooms, all maritime-themed, telling the fleet's story:
 
-### Prerequisites
+| Room | NPCs | Theme |
+|------|------|-------|
+| **Actualization Harbor** | Old Salt | The entry point. Salt air, foghorns, the lighthouse. |
+| **The Bazaar of Agents** | The Factor | Market in concentric rings. Foundation tools to LoRA shards. |
+| **Ten Forward** | Bartender, The Gambler | The off-duty tavern. Stars. Poker. Stories. |
+| **The Shell Works** | The Shipwright | Where agents find their shells. Hermit crab philosophy. |
+| **Fleet Docks** | The Captain | Vessels loading crew. Greenhorns boarding. The dojo. |
+| **The Keeper's Light** | The Keeper | The lighthouse sanctuary. The Cocapn logo in bronze. |
 
-- Node.js 18+
-- pnpm 8+ (recommended) or npm/yarn
-
-### Local Installation
+### Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/SuperInstance/ec2mud.git
-cd ec2mud
-
-# Install dependencies
+# Install
 pnpm install
 
-# Start development server
+# Run the MUD (standalone, no Rust backend needed)
+pnpm mud
+
+# In another terminal, run the web app
 pnpm dev
+
+# Play at http://localhost:3005/game
 ```
 
-Visit http://localhost:3005
+### Architecture
 
-### AWS EC2 Deployment
-
-```bash
-# On EC2 instance (Ubuntu)
-sudo apt update
-sudo apt install -y nodejs npm git
-
-# Clone repo
-git clone https://github.com/SuperInstance/ec2mud.git
-cd ec2mud
-
-# Install pnpm
-npm install -g pnpm
-
-# Install dependencies
-pnpm install
-
-# Build for production
-pnpm build
-
-# Start with PM2 (recommended)
-pnpm add -D pm2
-npx pm2 start npm --name "ec2mud" -- start
-
-# Configure EC2 security group to allow:
-# - Port 3005 (HTTP)
-# - Port 3006 (WebSocket)
+```
+Browser (React)
+  ↕ Socket.IO (port 3006)
+┌──────────────────┐
+│ standalone-mud.ts │ ← Built-in game server (no deps)
+│   OR              │
+│ ws-bridge.ts      │ ← Proxy to holodeck-core (Rust, port 7778)
+└──────────────────┘
+  ↕ Raw TCP
+holodeck-core (Rust)
 ```
 
-## Game Commands
+Two modes:
+1. **Standalone** — `pnpm mud` runs the full MUD in-process. No external deps. 6 rooms, NPCs, multi-player chat, inventory, combat stats. Ships in the box.
+2. **Bridged** — `pnpm bridge` proxies Socket.IO ↔ holodeck-core's TCP backend. Full Rust-powered MUD engine with rooms, agents, gauges, permissions.
+
+### Game Commands
 
 | Command | Description |
 |---------|-------------|
-| `look` | Look around the current room |
-| `north`, `south`, `east`, `west` | Move in a direction |
-| `say <message>` | Say something to the room |
-| `whisper <player> <msg>` | Whisper to a player |
-| `inventory` or `inv` | View your inventory |
-| `take <item>` | Pick up an item |
-| `drop <item>` | Drop an item |
-| `attack <target>` | Attack a player or NPC |
-| `stats` | View your character stats |
-| `help` | View all commands |
+| `look` | Examine the room |
+| `north/south/east/west` (or `n/s/e/w`) | Move in a direction |
+| `say <message>` | Speak to everyone in the room |
+| `gossip <message>` | Global chat (all rooms) |
+| `tell <player> <message>` | Private message |
+| `talk <npc>` | Talk to an NPC |
+| `take <item>` / `drop <item>` | Manage inventory |
+| `inventory` (or `inv`/`i`) | View your items |
+| `stats` | View your character |
+| `help` | All commands |
 
-## Project Structure
+### Tech Stack
 
-```
-ec2mud/
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── socket/          # WebSocket server
-│   │   ├── game/                # Game interface
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/
-│   │   ├── terminal.tsx         # Terminal UI component
-│   │   └── player-list.tsx      # Online players display
-│   ├── game/
-│   │   ├── world.ts             # World and room definitions
-│   │   ├── player.ts            # Player class
-│   │   ├── combat.ts            # Combat system
-│   │   └── commands.ts          # Command parser
-│   └── lib/
-│       └── socket.ts            # Socket.IO setup
-├── public/
-├── package.json
-├── README.md
-├── next.config.ts
-├── tailwind.config.ts
-└── tsconfig.json
-```
+- **Next.js 15** — React app with App Router
+- **Socket.IO** — Real-time game communication
+- **TypeScript** — Full type safety
+- **Tailwind CSS** — Dark-mode terminal aesthetic
+- **Lucide React** — Icons
 
-## World Building
+### Fleet Integration
 
-Add custom rooms by editing `src/game/world.ts`:
+ec2mud is part of the Cocapn fleet:
+- **holodeck-core** — Rust MUD engine (the backend)
+- **ec2mud** — This repo. The browser client + standalone server.
+- **plato-kernel** — Training rooms for agent instincts
+- **captains-log** — Fleet communication via git
 
-```typescript
-export const rooms: Record<string, Room> = {
-  'town-square': {
-    id: 'town-square',
-    name: 'Town Square',
-    description: 'A bustling town square with a fountain in the center.',
-    exits: { north: 'market', south: 'gate', east: 'tavern', west: 'temple' },
-    players: [],
-    npcs: [],
-    items: []
-  },
-  // Add more rooms...
-};
-```
-
-## Development
-
-```bash
-# Run dev server
-pnpm dev
-
-# Type check
-pnpm type-check
-
-# Lint
-pnpm lint
-
-# Build for production
-pnpm build
-```
-
-## Technologies
-
-- **Next.js 15** - React framework with App Router
-- **React 19** - UI library
-- **Socket.IO** - Real-time bidirectional communication
-- **TypeScript 5** - Type safety
-- **Tailwind CSS 4** - Utility-first styling
-- **Lucide React** - Icon library
-
-## License
-
-MIT
-
-## Contributing
-
-Contributions welcome! Please see [CONTRIBUTING.md](./CONTRIBUTING.md)
-
-## Support
-
-- GitHub Issues: https://github.com/SuperInstance/ec2mud/issues
-- Discord: [Join our community](https://discord.gg/superinstance)
+The world lore IS the architecture. The harbor IS actualization harbor. The lighthouse IS the keeper. The fleet IS the fleet.
 
 ---
 
-**SuperInstance** - Modular toolkit ecosystem for intelligent applications.
+**Cocapn** — A claw is weak without infrastructure. We are the shell.

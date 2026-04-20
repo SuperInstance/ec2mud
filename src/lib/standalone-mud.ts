@@ -98,6 +98,12 @@ const rooms: Record<string, Room> = {
 
 const players = new Map<string, Player>();
 
+// === GAME TELEMETRY ===
+const roomVisitCounts: Record<string, number> = {};
+const totalSessions = { count: 0 };
+const totalCommands = { count: 0 };
+const failedCommands = { count: 0 };
+
 const server = createServer();
 const io = new SocketIOServer(server, {
   cors: { origin: '*', methods: ['GET', 'POST'] },
@@ -154,14 +160,19 @@ function movePlayer(socket: any, player: Player, direction: string): boolean {
   const targetId = currentRoom.exits[direction];
   if (!targetId) {
     socket.emit('line', { text: `You can't go ${direction}.`, type: 'error' });
+    failedCommands.count++;
     return false;
   }
 
   const targetRoom = getRoom(targetId);
   if (!targetRoom) {
     socket.emit('line', { text: `The path ${direction} leads nowhere.`, type: 'error' });
+    failedCommands.count++;
     return false;
   }
+
+  // Track visit heatmap
+  roomVisitCounts[targetId] = (roomVisitCounts[targetId] || 0) + 1;
 
   // Announce departure
   for (const [sid, p] of players) {
@@ -216,6 +227,7 @@ function lookRoom(socket: any, player: Player) {
 }
 
 function handleCommand(socket: any, player: Player, input: string) {
+  totalCommands.count++;
   const parts = input.trim().split(/\s+/);
   const cmd = parts[0].toLowerCase();
   const args = parts.slice(1);
@@ -358,6 +370,7 @@ Info: stats, help`,
 
     default:
       socket.emit('line', { text: `Unknown command: ${cmd}. Type 'help' for commands.`, type: 'error' });
+      failedCommands.count++;
   }
 }
 
@@ -386,12 +399,13 @@ io.on('connection', (socket) => {
       hp: 100,
       maxHp: 100,
       level: 1,
-      room: 'harbor',
+      room: pickSpawnRoom(),
       inventory: [],
       socketId: socket.id,
     };
 
     players.set(socket.id, currentPlayer);
+    totalSessions.count++;
     socket.emit('login-ok', { name });
 
     // Welcome sequence
@@ -444,6 +458,41 @@ io.on('connection', (socket) => {
 
 server.listen(PORT, () => {
   console.log(`🔮 Holodeck MUD Server on :${PORT}`);
-  console.log(`   ${Object.keys(rooms).length} rooms, ${rooms.harbor.npcs.length + rooms.market.npcs.length + rooms.tavern.npcs.length + rooms.shipyard.npcs.length + rooms.docks.npcs.length + rooms.temple.npcs.length} NPCs`);
+  console.log(`   ${Object.keys(rooms).length} rooms, ${Object.values(rooms).reduce((a, r) => a + r.npcs.length, 0)} NPCs`);
   console.log(`   Connect at http://localhost:3005/game`);
+});
+
+/** Pick a spawn room, weighted toward less-visited rooms */
+function pickSpawnRoom(): string {
+  const roomIds = Object.keys(rooms);
+  const weights = roomIds.map(id => {
+    const visits = roomVisitCounts[id] || 0;
+    return Math.max(1, 10 - visits);
+  });
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * totalWeight;
+  for (let i = 0; i < roomIds.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return roomIds[i];
+  }
+  return 'harbor';
+}
+
+// Telemetry endpoint — the game reports on itself
+const telemetryServer = createServer((req, res) => {
+  if (req.url === '/telemetry') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      sessions: totalSessions.count,
+      commands: totalCommands.count,
+      failedCommands: failedCommands.count,
+      roomVisits: roomVisitCounts,
+      playersOnline: players.size,
+      uptime: process.uptime(),
+    }, null, 2));
+  }
+});
+const TELEMETRY_PORT = parseInt(process.env.TELEMETRY_PORT || '3007', 10);
+telemetryServer.listen(TELEMETRY_PORT, () => {
+  console.log(`   Telemetry: http://localhost:${TELEMETRY_PORT}/telemetry`);
 });

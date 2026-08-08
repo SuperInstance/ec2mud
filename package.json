@@ -19,6 +19,7 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
+    "test": "vitest run",
     "mud": "npx tsx src/lib/standalone-mud.ts",
     "bridge": "npx tsx src/lib/ws-bridge.ts",
     "dev:all": "concurrently 'next dev -p 3005' 'npx tsx src/lib/standalone-mud.ts'"
@@ -43,7 +44,8 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   },
   "engines": {
     "node": ">=18.0.0",

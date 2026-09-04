@@ -1,5 +1,9 @@
 # ec2mud
 
+<p align="center">
+  <img src="assets/images/hero.jpg" alt="ec2mud — the web face of the holodeck fleet" width="720">
+</p>
+
 **A browser-based MUD game engine with web dashboard, powered by Socket.IO.**
 
 The web face of the holodeck fleet. Players connect via browser, explore rooms, talk to NPCs, interact with other players — all in real-time. When holodeck-core (Rust) is running, the WebSocket bridge connects directly. When it's not, the built-in standalone MUD server takes over.
